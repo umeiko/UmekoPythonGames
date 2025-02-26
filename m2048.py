@@ -49,26 +49,76 @@ class The2048Game():
                     return True
 
     def moveup(self):
-        for line in range(2, -1, -1):
-            for element in range(4):
-                if self.num_mat[line * 4 + element] == self.num_mat[(line + 1) * 4 + element] or self.num_mat[line * 4 + element] == 0:
-                    self.num_mat[line * 4 + element] += self.num_mat[(line + 1) * 4 + element]
-                    self.num_mat[(line + 1) * 4 + element] = 0
-                    if (line+2) < 3:
-                        if self.num_mat[(line + 2) * 4 + element] != 0:
-                            self.num_mat[(line + 1) * 4 + element] = self.num_mat[(line + 2) * 4 + element]
+        for colum in range(4):
+            idx = [colum + item * 4 for item in range(4)]
+            colum_nums = [self.num_mat[i] for i in idx]
+            out = self.move_line(colum_nums)
+            for k, i in enumerate(idx):
+                self.num_mat[i] = out[k]
+    
+    def movedown(self):
+        for colum in range(3, -1, -1):
+            idx = [colum + item * 4 for item in range(3, -1, -1)]
+            colum_nums = [self.num_mat[i] for i in idx]
+            out = self.move_line(colum_nums)
+            for k, i in enumerate(idx):
+                self.num_mat[i] = out[k]
 
+    def moveleft(self):
+        for colum in range(4):
+            idx = [colum * 4 + item for item in range(4)]
+            colum_nums = [self.num_mat[i] for i in idx]
+            out = self.move_line(colum_nums)
+            for k, i in enumerate(idx):
+                self.num_mat[i] = out[k]
+    
+    def moveright(self):
+        for colum in range(4):
+            idx = [colum * 4 + item for item in range(3, -1, -1)]
+            colum_nums = [self.num_mat[i] for i in idx]
+            out = self.move_line(colum_nums)
+            for k, i in enumerate(idx):
+                self.num_mat[i] = out[k]
+            
+    def print_mat(self):
+        print("\n", end="")
+        for k, i in enumerate(self.num_mat):
+            if k % 4 == 0:
+                print("\n", end="")
+            print(i, end="")
 
+    def move_line(self, inputs:list):
+        out = inputs.copy()
+        if out[3] == out[2] or out[2] == 0:
+            out[2] += out[3]
+            out[3] = 0
+        if out[2] == out[1] or out[1] == 0:
+            out[1] += out[2]
+            out[2] = 0
+            if out[3] != 0:
+                out[2] = out[3]
+                out[3] = 0
+        if out[0] == out[1] or out[0] == 0:
+            out[0] += out[1]
+            out[1] = 0
+            if out[2] != 0:
+                out[1] = out[2]
+                out[2] = 0
+                if out[3] != 0:
+                    out[2] = out[3]
+                    out[3] = 0
+        return out
 
 
     def move(self, direction):
         if direction == UP:
             self.moveup()
-        # elif direction == DOWN:
-        #     self.movedown()
-        # elif direction == LEFT:
-        #     self.moveleft()
-        # elif direction == RIGHT:
+        elif direction == DOWN:
+            self.movedown()
+        elif direction == LEFT:
+            self.moveleft()
+        elif direction == RIGHT:
+            self.moveright()
     
     def render(self, surf:pygame.Surface):
         surf.fill((187, 173, 160))
@@ -83,6 +133,9 @@ class The2048Game():
                     surf.blit(text, text_rect)
                 else:
                     pygame.draw.rect(surf, (205, 193, 180), (j * 100 + 5, i * 100 + 5, 90, 90))
+    
+    def random_insert(self):
+        ...
 
 
 def main_loop(game:The2048Game):
