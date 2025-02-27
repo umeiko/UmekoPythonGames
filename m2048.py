@@ -42,11 +42,62 @@ class The2048Game():
         self.num_mat = randgen
         self.score = 0
     
+    def game_over(self):
+        pygame.init()
+        score = self.calc_score()
+        screen = pygame.display.set_mode((400, 400))
+        font = pygame.font.Font(None, 75)
+        text = font.render("Game Over", True, (255, 0, 0))
+        text_rect = text.get_rect(center=(200, 100))
+        score_font = pygame.font.Font(None, 50)
+        score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
+        score_text_rect = score_text.get_rect(center=(200, 200))
+        button_font = pygame.font.Font(None, 50)
+        button_text = button_font.render("Restart", True, (255, 255, 255))
+        button_rect = pygame.Rect(150, 250, 100, 50)
+        button_text_rect = button_text.get_rect(center=button_rect.center)
+        clock = pygame.time.Clock()
+        button_color = (0, 0, 255)
+        hover_color = (0, 0, 200)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if button_rect.collidepoint(event.pos):
+                        self.__init__()
+                        return
+
+            mouse_pos = pygame.mouse.get_pos()
+            if button_rect.collidepoint(mouse_pos):
+                current_color = hover_color
+            else:
+                current_color = button_color
+            screen.fill((0, 0, 0))
+            screen.blit(text, text_rect)
+            screen.blit(score_text, score_text_rect)
+            pygame.draw.rect(screen, current_color, button_rect)
+            screen.blit(button_text, button_text_rect)
+            pygame.display.flip()
+            clock.tick(FPS)
+    
     def random_gen(self):
+        zero_id = []
+        for k, i in enumerate(self.num_mat):
+            if i == 0:
+                zero_id.append(k)
+        if len(zero_id) == 0:
+            self.game_over()
+            return
+        idx = random.choice(zero_id)
+        self.num_mat[idx] = random.choice([2, 4])
+    
+    def calc_score(self):
+        score = 0
         for i in self.num_mat:
-            for j in i:
-                if j == 0:
-                    return True
+            score += i
+        return score
 
     def moveup(self):
         for colum in range(4):
@@ -134,9 +185,6 @@ class The2048Game():
                 else:
                     pygame.draw.rect(surf, (205, 193, 180), (j * 100 + 5, i * 100 + 5, 90, 90))
     
-    def random_insert(self):
-        ...
-
 
 def main_loop(game:The2048Game):
         pygame.init()
@@ -149,20 +197,22 @@ def main_loop(game:The2048Game):
                 if event.type == pygame.QUIT:
                     exit()
                 if event.type == pygame.KEYDOWN:
+                    ACTION = None
                     if event.key == pygame.K_UP:
-                        game.move(UP)
+                        ACTION = UP
                     elif event.key == pygame.K_DOWN:
-                        game.move(DOWN)
+                        ACTION = DOWN
                     elif event.key == pygame.K_RIGHT:
-                        game.move(RIGHT)
+                        ACTION = RIGHT
                     elif event.key == pygame.K_LEFT:
-                        game.move(LEFT)
+                        ACTION = LEFT
+                    
+                    if ACTION != None:
+                        cpy = game.num_mat.copy()
+                        game.move(ACTION)
+                        if  game.num_mat != cpy:
+                            game.random_gen()
 
-            # 计算更新游戏
-            # self.rules_control()
-            # 屏幕渲染
-
-            screen.fill(pygame.Color('white'))
             game.render(screen)
             pygame.display.flip()
             clock.tick(FPS)
